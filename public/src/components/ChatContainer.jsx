@@ -3,6 +3,7 @@ import loader from "../assets/loader.gif";
 import styled from "styled-components";
 import ChatInput from "./ChatInput";
 import Logout from "./Logout";
+import ImageModal from "./ImageModal";
 import { v4 as uuidv4 } from "uuid";
 import axios from "axios";
 import {
@@ -34,6 +35,7 @@ function isValidObjectId(id) {
 }
 
 export default function ChatContainer({ currentChat, socket }) {
+  const [previewImage, setPreviewImage] = useState(null);
   const [messages, setMessages] = useState([]);
   const [userId, setUserId] = useState(null);
   const [contextMenu, setContextMenu] = useState({
@@ -303,9 +305,33 @@ export default function ChatContainer({ currentChat, socket }) {
 
   // Render message content (for uploaded files / links)
   const renderMessageContent = (text) => {
+    // Check if the message is an image URL
+    const isImageUrl = (url) => {
+      return url.match(/\.(jpeg|jpg|gif|png|webp)$/i) != null;
+    };
+
+    // If it's a file from your upload endpoint, construct the full URL
+    const getFullImageUrl = (path) => {
+      if (path.startsWith('http')) return path;
+      return `${host}/${path}`;
+    };
+    
     if (!text) return null;
     const isAbsolute = /^https?:\/\//i.test(text);
     const isUploadRel = typeof text === "string" && text.includes("/uploads/");
+    
+    // Handle images
+    if (isImageUrl(text) || isUploadRel) {
+      const imageUrl = getFullImageUrl(text);
+      return (
+        <img 
+          src={imageUrl} 
+          alt="Shared" 
+          className="message-image"
+          onClick={() => setPreviewImage(imageUrl)}
+        />
+      );
+    }
     const isImageExt = /\.(png|jpe?g|gif|webp|svg)$/i.test(text);
     const effectiveSrc = isAbsolute
       ? text
@@ -575,6 +601,14 @@ export default function ChatContainer({ currentChat, socket }) {
           Typing...
         </div>
       )}
+
+      {/* Image Preview Modal */}
+      {previewImage && (
+        <ImageModal 
+          imageUrl={previewImage} 
+          onClose={() => setPreviewImage(null)} 
+        />
+      )}
     </Container>
   );
 }
@@ -661,6 +695,19 @@ const Container = styled.div`
         }
         border-radius: 1rem;
         color: #d1d1d1;
+
+        .message-image {
+          max-width: 100%;
+          max-height: 300px;
+          border-radius: 0.5rem;
+          cursor: pointer;
+          transition: transform 0.2s ease;
+          margin: -0.5rem -0.5rem 0.5rem -0.5rem;
+          
+          &:hover {
+            transform: scale(1.02);
+          }
+        }
         @media screen and (min-width: 720px) and (max-width: 1080px) {
           max-width: 70%;
         }

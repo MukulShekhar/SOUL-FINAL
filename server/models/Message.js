@@ -15,6 +15,10 @@ const messageSchema = new mongoose.Schema(
     sender: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, // removed required: true
     seenBy: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     reactions: [reactionSchema],
+    isBot: { type: Boolean, default: false }, // Indicates if message is from bot
+    botConversationId: { type: String }, // Groups messages in same bot conversation
+    contextInfo: { type: Object }, // Stores additional context for bot conversations
+    messageType: { type: String, enum: ['text', 'command', 'response'], default: 'text' }, // Type of message
   },
   { timestamps: true }
 );

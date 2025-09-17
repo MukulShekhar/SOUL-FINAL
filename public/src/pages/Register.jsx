@@ -35,43 +35,112 @@ export default function Register() {
     setValues({ ...values, [event.target.name]: event.target.value });
   };
 
+    const validatePassword = (password) => {
+    const minLength = 8;
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasLowerCase = /[a-z]/.test(password);
+    const hasNumbers = /\d/.test(password);
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+    
+    const errors = [];
+    if (password.length < minLength) {
+      errors.push(`Password must be at least ${minLength} characters long`);
+    }
+    if (!hasUpperCase) {
+      errors.push("Password must contain at least one uppercase letter");
+    }
+    if (!hasLowerCase) {
+      errors.push("Password must contain at least one lowercase letter");
+    }
+    if (!hasNumbers) {
+      errors.push("Password must contain at least one number");
+    }
+    if (!hasSpecialChar) {
+      errors.push("Password must contain at least one special character");
+    }
+    return errors;
+  };
+
+  const validateUsername = (username) => {
+    const minLength = 3;
+    const maxLength = 20;
+    const validChars = /^[a-zA-Z0-9_-]+$/;
+    
+    const errors = [];
+    if (username.length < minLength) {
+      errors.push(`Username must be at least ${minLength} characters long`);
+    }
+    if (username.length > maxLength) {
+      errors.push(`Username must not exceed ${maxLength} characters`);
+    }
+    if (!validChars.test(username)) {
+      errors.push("Username can only contain letters, numbers, underscores, and hyphens");
+    }
+    return errors;
+  };
+
   const handleValidation = () => {
     const { password, confirmPassword, username, email } = values;
+    let isValid = true;
+
+    // Validate password match
     if (password !== confirmPassword) {
       toast.error("Password and confirm password should be same.", toastOptions);
-      return false;
-    } else if (username.length < 3) {
-      toast.error("Username should be greater than 3 characters.", toastOptions);
-      return false;
-    } else if (password.length < 8) {
-      toast.error(
-        "Password should be equal or greater than 8 characters.",
-        toastOptions
-      );
-      return false;
-    } else if (email === "") {
-      toast.error("Email is required.", toastOptions);
-      return false;
+      isValid = false;
     }
-    return true;
+
+    // Validate username
+    const usernameErrors = validateUsername(username);
+    if (usernameErrors.length > 0) {
+      usernameErrors.forEach(error => toast.error(error, toastOptions));
+      isValid = false;
+    }
+
+    // Validate password
+    const passwordErrors = validatePassword(password);
+    if (passwordErrors.length > 0) {
+      passwordErrors.forEach(error => toast.error(error, toastOptions));
+      isValid = false;
+    }
+
+    // Validate email
+    if (!email || !email.includes('@') || !email.includes('.')) {
+      toast.error("Please enter a valid email address.", toastOptions);
+      isValid = false;
+    }
+
+    return isValid;
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (handleValidation()) {
-      const { email, username, password } = values;
-      const { data } = await axios.post(registerRoute, {
-        username,
-        email,
-        password,
-      });
+      try {
+        const { email, username, password } = values;
+        const { data } = await axios.post(registerRoute, {
+          username,
+          email,
+          password,
+        });
 
-      if (data.status === false) {
-        toast.error(data.msg, toastOptions);
-      }
-      if (data.status === true) {
-        localStorage.setItem(LOCALHOST_KEY, JSON.stringify(data.user));
-        navigate("/");
+        if (data.status === false) {
+          // If server returns multiple validation errors
+          if (data.errors && Array.isArray(data.errors)) {
+            data.errors.forEach(error => toast.error(error, toastOptions));
+          } else {
+            toast.error(data.msg, toastOptions);
+          }
+        } else if (data.status === true) {
+          // Success case
+          toast.success("Registration successful!", toastOptions);
+          localStorage.setItem(LOCALHOST_KEY, JSON.stringify(data.user));
+          navigate("/");
+        }
+      } catch (error) {
+        toast.error(
+          "An error occurred during registration. Please try again.", 
+          toastOptions
+        );
       }
     }
   };

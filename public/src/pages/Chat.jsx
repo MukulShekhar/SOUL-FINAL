@@ -89,31 +89,53 @@ export default function Chat() {
             <ChatContainer currentChat={currentChat} socket={socket} />
           )}
         </div>
+        {/* Bot Chat Button */}
+        <button 
+          className="bot-button" 
+          onClick={() => navigate("/bot")}
+          title="Chat with SOUL Bot"
+        >
+          🤖
+        </button>
       </Container>
     </>
   );
 }
 
 const Container = styled.div`
-  min-height: 100vh;
+  height: 100vh;
   width: 100vw;
   display: flex;
   flex-direction: column;
   justify-content: center;
+  gap: 1rem;
   align-items: center;
-  background: linear-gradient(135deg, #232526 0%, #414345 100%);
+  background-color: #131324;
+  
+  .bot-button {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    padding: 1rem;
+    border-radius: 50%;
+    background-color: #4f04ff21;
+    border: none;
+    cursor: pointer;
+    font-size: 1.5rem;
+    color: white;
+    transition: all 0.3s ease;
+    &:hover {
+      transform: scale(1.1);
+      background-color: #4f04ff40;
+    }
+  }
+
   .container {
     height: 85vh;
     width: 85vw;
-    background: rgba(30, 32, 60, 0.95);
-    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-    border-radius: 24px;
+    background-color: #00000076;
     display: grid;
     grid-template-columns: 25% 75%;
-    overflow: hidden;
-    border: 1.5px solid rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(8px);
-    position: relative;
     @media screen and (min-width: 720px) and (max-width: 1080px) {
       grid-template-columns: 35% 65%;
     }

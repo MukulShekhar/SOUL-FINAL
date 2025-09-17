@@ -7,6 +7,7 @@ const authRoutes = require("./routes/auth");
 const messageRoutes = require("./routes/messages");
 const userRoutes = require("./routes/userActions");
 const uploadRoutes = require("./routes/upload");
+const botRoutes = require("./routes/bot");
 const path = require("path");
 const fs = require("fs");
 const { Server } = require("socket.io");
@@ -53,6 +54,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/messages", messageRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/upload", uploadRoutes);
+app.use("/api/bot", botRoutes);
 
 // ✅ Health check
 app.get("/api/ping", (req, res) => res.json({ ok: true }));

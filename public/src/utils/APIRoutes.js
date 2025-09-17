@@ -10,3 +10,9 @@ export const setAvatarRoute = `${host}/api/auth/setavatar`;
 export const deleteMessageRoute = `${host}/api/messages/deletemsg`;
 export const reactMessageRoute = `${host}/api/messages/reactmsg`;
 export const uploadRoute = `${host}/api/upload`;
+
+// Bot routes
+export const startBotChatRoute = `${host}/api/bot/start`;
+export const continueBotChatRoute = `${host}/api/bot/continue`;
+export const getBotHistoryRoute = `${host}/api/bot/history`;
+export const getBotConversationsRoute = `${host}/api/bot/conversations`;

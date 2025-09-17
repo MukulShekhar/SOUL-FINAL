@@ -1,5 +1,6 @@
 const User = require("../models/userModel");
 const bcrypt = require("bcrypt");
+const { validatePassword, validateUsername } = require("../utils/validation");
 
 module.exports.login = async (req, res, next) => {
   try {
@@ -21,12 +22,41 @@ module.exports.login = async (req, res, next) => {
 module.exports.register = async (req, res, next) => {
   try {
     const { username, email, password } = req.body;
-    const usernameCheck = await User.findOne({ username });
+
+    // Validate username format
+    const usernameValidation = validateUsername(username);
+    if (!usernameValidation.isValid) {
+      return res.json({ 
+        msg: usernameValidation.errors[0],
+        errors: usernameValidation.errors,
+        status: false 
+      });
+    }
+
+    // Check if username is already taken
+    const usernameCheck = await User.findOne({ 
+      username: { $regex: new RegExp(`^${username}$`, 'i') } // Case-insensitive check
+    });
     if (usernameCheck)
       return res.json({ msg: "Username already used", status: false });
-    const emailCheck = await User.findOne({ email });
+
+    // Validate email uniqueness
+    const emailCheck = await User.findOne({ 
+      email: { $regex: new RegExp(`^${email}$`, 'i') } // Case-insensitive check
+    });
     if (emailCheck)
       return res.json({ msg: "Email already used", status: false });
+
+    // Validate password
+    const passwordValidation = validatePassword(password);
+    if (!passwordValidation.isValid) {
+      return res.json({ 
+        msg: passwordValidation.errors[0],
+        errors: passwordValidation.errors,
+        status: false 
+      });
+    }
+
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = await User.create({
       email,
